@@ -1,92 +1,238 @@
 import 'package:flutter/material.dart';
 
-void main() => runApp(MyApp());
+void main() {
+  runApp(MyApp());
+}
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-  static const String _title = 'Flutter Stateful Clicker Counter';
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: _title,
+      title: 'Button Table Example',
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: MyHomePage(),
+      home: ButtonTablePage(),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key});
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-  // This class is the configuration for the state.
+class ButtonTablePage extends StatefulWidget {
   @override
-  _MyHomePageState createState() => _MyHomePageState();
+  _ButtonTablePageState createState() => _ButtonTablePageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
+class _ButtonTablePageState extends State<ButtonTablePage> {
+  List<String> buttonValues1 = List.filled(5, '');
+  List<String> buttonValues2 = List.filled(5, '');
+  List<String> tableValues1 =
+      List.generate(15, (index) => (index + 1).toString());
+  List<String> tableValues2 = List.generate(15, (_) => '');
+  List<String> table2Values1 =
+      List.generate(15, (index) => (index + 16).toString());
+  List<String> table2Values2 = List.generate(15, (_) => '');
 
-  void _incrementCounter() {
+  int lastFilledCellIndex1 = -1;
+  int lastFilledCellIndex2 = -1;
+  int lastNumberIndex1 = -1;
+  int lastNumberIndex2 = -1;
+  bool isTable1Active = true;
+
+  bool sumEquals9(List<String> values) {
+    int sum = 0;
+    for (String value in values) {
+      sum += int.tryParse(value) ?? 0;
+    }
+    return sum == 9;
+  }
+
+  void resetLastCell() {
+    if (isTable1Active && lastFilledCellIndex1 >= 0) {
+      tableValues2[lastFilledCellIndex2 + 1] = '';
+      lastFilledCellIndex1--;
+    } else if (!isTable1Active && lastFilledCellIndex2 >= 0) {
+      table2Values2[lastFilledCellIndex2] = '';
+      lastFilledCellIndex2--;
+      lastNumberIndex2 = -1; // Reset last number index when cell is deleted
+    }
+  }
+
+  void switchTables() {
     setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
+      isTable1Active = !isTable1Active;
     });
+  }
+
+  int getSum() {
+    int sum = 0;
+    for (String value in tableValues2) {
+      sum += int.tryParse(value) ?? 0;
+    }
+    for (String value in table2Values2) {
+      sum += int.tryParse(value) ?? 0;
+    }
+    return sum;
   }
 
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
     return Scaffold(
       appBar: AppBar(
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text('Flutter Demo Click Counter'),
+        title: Text('Button Table Example'),
       ),
-      body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
-        child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Text(
-              'You have pushed the button this many times:',
+      body: Column(
+        children: [
+          SizedBox(height: 16),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: List.generate(
+              5,
+              (index) => ElevatedButton(
+                onPressed: () {
+                  setState(() {
+                    buttonValues1[index] = (index + 1).toString();
+                    if (isTable1Active) {
+                      lastFilledCellIndex1++;
+                      tableValues2[lastFilledCellIndex1] = buttonValues1[index];
+                      if (lastFilledCellIndex1 >= 14) switchTables();
+                    } else {
+                      lastFilledCellIndex2++;
+                      table2Values2[lastFilledCellIndex2] =
+                          buttonValues1[index];
+                      if ((lastFilledCellIndex2 + 16) % 9 == 0)
+                        lastNumberIndex2 = lastFilledCellIndex2;
+                    }
+                  });
+                },
+                child: Text((index + 1).toString()),
+              ),
             ),
-            Text(
-              '$_counter',
-              style: TextStyle(fontSize: 25),
-            ),
-          ],
-        ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: Icon(Icons.add),
+          ),
+          SizedBox(height: 16),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              ...List.generate(
+                4,
+                (index) => ElevatedButton(
+                  onPressed: () {
+                    setState(() {
+                      buttonValues2[index] = (index + 6).toString();
+                      if (isTable1Active) {
+                        lastFilledCellIndex1++;
+                        tableValues2[lastFilledCellIndex1] =
+                            buttonValues2[index];
+                        if (lastFilledCellIndex1 >= 14) switchTables();
+                      } else {
+                        lastFilledCellIndex2++;
+                        table2Values2[lastFilledCellIndex2] =
+                            buttonValues2[index];
+                        if ((lastFilledCellIndex2 + 16) % 9 == 0)
+                          lastNumberIndex2 = lastFilledCellIndex2;
+                      }
+                    });
+                  },
+                  child: Text((index + 6).toString()),
+                ),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  setState(() {
+                    buttonValues2[4] = '0';
+                    if (isTable1Active) {
+                      lastFilledCellIndex1++;
+                      tableValues2[lastFilledCellIndex1] = buttonValues2[4];
+                      if (lastFilledCellIndex1 >= 14) switchTables();
+                    } else {
+                      lastFilledCellIndex2++;
+                      table2Values2[lastFilledCellIndex2] = buttonValues2[4];
+                      if ((lastFilledCellIndex2 + 16) % 9 == 0)
+                        lastNumberIndex2 = lastFilledCellIndex2;
+                    }
+                  });
+                },
+                child: Text('0'),
+              ),
+            ],
+          ),
+          SizedBox(height: 32),
+          Table(
+            border: TableBorder.all(),
+            columnWidths: {
+              for (int i = 0; i < 15; i++) i: FlexColumnWidth(1),
+            },
+            children: [
+              TableRow(
+                children: [
+                  for (int i = 0; i < 15; i++)
+                    Padding(
+                      padding: EdgeInsets.all(8.0),
+                      child: Text(
+                        tableValues1[i],
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                ],
+              ),
+              TableRow(
+                children: [
+                  for (int i = 0; i < 15; i++)
+                    Padding(
+                      padding: EdgeInsets.all(8.0),
+                      child: Text(
+                        tableValues2[i],
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                ],
+              ),
+            ],
+          ),
+          SizedBox(height: 16),
+          Table(
+            border: TableBorder.all(),
+            columnWidths: {
+              for (int i = 0; i < 15; i++) i: FlexColumnWidth(1),
+            },
+            children: [
+              TableRow(
+                children: [
+                  for (int i = 0; i < 15; i++)
+                    Padding(
+                      padding: EdgeInsets.all(8.0),
+                      child: Text(
+                        table2Values1[i],
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                ],
+              ),
+              TableRow(
+                children: [
+                  for (int i = 0; i < 15; i++)
+                    Padding(
+                      padding: EdgeInsets.all(8.0),
+                      child: Text(
+                        table2Values2[i],
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: isTable1Active
+                              ? null
+                              : (i == lastNumberIndex2 ? Colors.green : null),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ],
+          ),
+          SizedBox(height: 16),
+          Text(
+            'SUM: ${getSum()}',
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          ),
+        ],
       ),
     );
   }
 }
-
