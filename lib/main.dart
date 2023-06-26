@@ -32,9 +32,10 @@ class _ButtonTablePageState extends State<ButtonTablePage> {
       List.generate(15, (index) => (index + 16).toString());
   List<String> table2Values2 = [];
   List<String> storedValues = [];
-  int nextButtonCount = 0;
 
-  void storeTables() {
+  bool showNextButton = false;
+
+  void storeValues() {
     storedValues.clear();
     storedValues.addAll(tableValues2);
     storedValues.addAll(table2Values2);
@@ -47,22 +48,18 @@ class _ButtonTablePageState extends State<ButtonTablePage> {
 
   void onButtonClick() {
     setState(() {
-      if (nextButtonCount == 0) {
-        clearTables();
-      }
-      nextButtonCount++;
-      if (nextButtonCount > 4) {
-        storeTables();
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => EndScreen(storedValues)),
-        );
-      } else {
-        if (tableValues2.length < tableValues1.length) {
-          tableValues2.addAll(buttonValues1);
-        } else {
-          table2Values2.addAll(buttonValues1);
-        }
+      clearTables();
+      storeValues();
+      showNextButton = false;
+    });
+  }
+
+  void onBackButtonClick() {
+    setState(() {
+      if (table2Values2.isNotEmpty) {
+        table2Values2.removeLast();
+      } else if (tableValues2.isNotEmpty) {
+        tableValues2.removeLast();
       }
     });
   }
@@ -84,6 +81,15 @@ class _ButtonTablePageState extends State<ButtonTablePage> {
                 onPressed: () {
                   setState(() {
                     buttonValues1[index] = (index + 1).toString();
+                    if (tableValues2.length < table2Values1.length) {
+                      tableValues2.add(buttonValues1[index]);
+                    } else {
+                      table2Values2.add(buttonValues1[index]);
+                    }
+                    if (tableValues2.length == table2Values1.length &&
+                        table2Values2.length == table2Values1.length) {
+                      showNextButton = true;
+                    }
                   });
                 },
                 child: Text((index + 1).toString()),
@@ -100,6 +106,15 @@ class _ButtonTablePageState extends State<ButtonTablePage> {
                   onPressed: () {
                     setState(() {
                       buttonValues2[index] = (index + 6).toString();
+                      if (tableValues2.length < table2Values1.length) {
+                        tableValues2.add(buttonValues2[index]);
+                      } else {
+                        table2Values2.add(buttonValues2[index]);
+                      }
+                      if (tableValues2.length == table2Values1.length &&
+                          table2Values2.length == table2Values1.length) {
+                        showNextButton = true;
+                      }
                     });
                   },
                   child: Text((index + 6).toString()),
@@ -109,6 +124,15 @@ class _ButtonTablePageState extends State<ButtonTablePage> {
                 onPressed: () {
                   setState(() {
                     buttonValues2[4] = '0';
+                    if (tableValues2.length < table2Values1.length) {
+                      tableValues2.add(buttonValues2[4]);
+                    } else {
+                      table2Values2.add(buttonValues2[4]);
+                    }
+                    if (tableValues2.length == table2Values1.length &&
+                        table2Values2.length == table2Values1.length) {
+                      showNextButton = true;
+                    }
                   });
                 },
                 child: Text('0'),
@@ -182,53 +206,20 @@ class _ButtonTablePageState extends State<ButtonTablePage> {
             ],
           ),
           SizedBox(height: 16),
-          Align(
-            alignment: Alignment.bottomRight,
-            child: Padding(
-              padding: EdgeInsets.all(16.0),
-              child: ElevatedButton(
-                onPressed: onButtonClick,
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              ElevatedButton(
+                onPressed: onBackButtonClick,
+                child: Text('Back'),
+              ),
+              ElevatedButton(
+                onPressed: showNextButton ? onButtonClick : null,
                 child: Text('Näste Bahn'),
               ),
-            ),
+            ],
           ),
         ],
-      ),
-    );
-  }
-}
-
-class EndScreen extends StatelessWidget {
-  final List<String> storedValues;
-
-  EndScreen(this.storedValues);
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('End Screen'),
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              'Stored Values:',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 16),
-            ListView.builder(
-              shrinkWrap: true,
-              itemCount: storedValues.length,
-              itemBuilder: (context, index) {
-                return ListTile(
-                  title: Text(storedValues[index]),
-                );
-              },
-            ),
-          ],
-        ),
       ),
     );
   }
