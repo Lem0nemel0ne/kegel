@@ -27,51 +27,44 @@ class _ButtonTablePageState extends State<ButtonTablePage> {
   List<String> buttonValues2 = List.filled(5, '');
   List<String> tableValues1 =
       List.generate(15, (index) => (index + 1).toString());
-  List<String> tableValues2 = List.generate(15, (_) => '');
+  List<String> tableValues2 = [];
   List<String> table2Values1 =
       List.generate(15, (index) => (index + 16).toString());
-  List<String> table2Values2 = List.generate(15, (_) => '');
+  List<String> table2Values2 = [];
+  List<String> storedValues = [];
+  int nextButtonCount = 0;
 
-  int lastFilledCellIndex1 = -1;
-  int lastFilledCellIndex2 = -1;
-  int lastNumberIndex1 = -1;
-  int lastNumberIndex2 = -1;
-  bool isTable1Active = true;
-
-  bool sumEquals9(List<String> values) {
-    int sum = 0;
-    for (String value in values) {
-      sum += int.tryParse(value) ?? 0;
-    }
-    return sum == 9;
+  void storeTables() {
+    storedValues.clear();
+    storedValues.addAll(tableValues2);
+    storedValues.addAll(table2Values2);
   }
 
-  void resetLastCell() {
-    if (isTable1Active && lastFilledCellIndex1 >= 0) {
-      tableValues2[lastFilledCellIndex2 + 1] = '';
-      lastFilledCellIndex1--;
-    } else if (!isTable1Active && lastFilledCellIndex2 >= 0) {
-      table2Values2[lastFilledCellIndex2] = '';
-      lastFilledCellIndex2--;
-      lastNumberIndex2 = -1; // Reset last number index when cell is deleted
-    }
+  void clearTables() {
+    tableValues2.clear();
+    table2Values2.clear();
   }
 
-  void switchTables() {
+  void onButtonClick() {
     setState(() {
-      isTable1Active = !isTable1Active;
+      if (nextButtonCount == 0) {
+        clearTables();
+      }
+      nextButtonCount++;
+      if (nextButtonCount > 4) {
+        storeTables();
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => EndScreen(storedValues)),
+        );
+      } else {
+        if (tableValues2.length < tableValues1.length) {
+          tableValues2.addAll(buttonValues1);
+        } else {
+          table2Values2.addAll(buttonValues1);
+        }
+      }
     });
-  }
-
-  int getSum() {
-    int sum = 0;
-    for (String value in tableValues2) {
-      sum += int.tryParse(value) ?? 0;
-    }
-    for (String value in table2Values2) {
-      sum += int.tryParse(value) ?? 0;
-    }
-    return sum;
   }
 
   @override
@@ -91,17 +84,6 @@ class _ButtonTablePageState extends State<ButtonTablePage> {
                 onPressed: () {
                   setState(() {
                     buttonValues1[index] = (index + 1).toString();
-                    if (isTable1Active) {
-                      lastFilledCellIndex1++;
-                      tableValues2[lastFilledCellIndex1] = buttonValues1[index];
-                      if (lastFilledCellIndex1 >= 14) switchTables();
-                    } else {
-                      lastFilledCellIndex2++;
-                      table2Values2[lastFilledCellIndex2] =
-                          buttonValues1[index];
-                      if ((lastFilledCellIndex2 + 16) % 9 == 0)
-                        lastNumberIndex2 = lastFilledCellIndex2;
-                    }
                   });
                 },
                 child: Text((index + 1).toString()),
@@ -118,18 +100,6 @@ class _ButtonTablePageState extends State<ButtonTablePage> {
                   onPressed: () {
                     setState(() {
                       buttonValues2[index] = (index + 6).toString();
-                      if (isTable1Active) {
-                        lastFilledCellIndex1++;
-                        tableValues2[lastFilledCellIndex1] =
-                            buttonValues2[index];
-                        if (lastFilledCellIndex1 >= 14) switchTables();
-                      } else {
-                        lastFilledCellIndex2++;
-                        table2Values2[lastFilledCellIndex2] =
-                            buttonValues2[index];
-                        if ((lastFilledCellIndex2 + 16) % 9 == 0)
-                          lastNumberIndex2 = lastFilledCellIndex2;
-                      }
                     });
                   },
                   child: Text((index + 6).toString()),
@@ -139,23 +109,13 @@ class _ButtonTablePageState extends State<ButtonTablePage> {
                 onPressed: () {
                   setState(() {
                     buttonValues2[4] = '0';
-                    if (isTable1Active) {
-                      lastFilledCellIndex1++;
-                      tableValues2[lastFilledCellIndex1] = buttonValues2[4];
-                      if (lastFilledCellIndex1 >= 14) switchTables();
-                    } else {
-                      lastFilledCellIndex2++;
-                      table2Values2[lastFilledCellIndex2] = buttonValues2[4];
-                      if ((lastFilledCellIndex2 + 16) % 9 == 0)
-                        lastNumberIndex2 = lastFilledCellIndex2;
-                    }
                   });
                 },
                 child: Text('0'),
               ),
             ],
           ),
-          SizedBox(height: 32),
+          SizedBox(height: 16),
           Table(
             border: TableBorder.all(),
             columnWidths: {
@@ -180,7 +140,7 @@ class _ButtonTablePageState extends State<ButtonTablePage> {
                     Padding(
                       padding: EdgeInsets.all(8.0),
                       child: Text(
-                        tableValues2[i],
+                        tableValues2.length > i ? tableValues2[i] : '',
                         textAlign: TextAlign.center,
                       ),
                     ),
@@ -213,13 +173,8 @@ class _ButtonTablePageState extends State<ButtonTablePage> {
                     Padding(
                       padding: EdgeInsets.all(8.0),
                       child: Text(
-                        table2Values2[i],
+                        table2Values2.length > i ? table2Values2[i] : '',
                         textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: isTable1Active
-                              ? null
-                              : (i == lastNumberIndex2 ? Colors.green : null),
-                        ),
                       ),
                     ),
                 ],
@@ -227,11 +182,53 @@ class _ButtonTablePageState extends State<ButtonTablePage> {
             ],
           ),
           SizedBox(height: 16),
-          Text(
-            'SUM: ${getSum()}',
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          Align(
+            alignment: Alignment.bottomRight,
+            child: Padding(
+              padding: EdgeInsets.all(16.0),
+              child: ElevatedButton(
+                onPressed: onButtonClick,
+                child: Text('Näste Bahn'),
+              ),
+            ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class EndScreen extends StatelessWidget {
+  final List<String> storedValues;
+
+  EndScreen(this.storedValues);
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('End Screen'),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              'Stored Values:',
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            ),
+            SizedBox(height: 16),
+            ListView.builder(
+              shrinkWrap: true,
+              itemCount: storedValues.length,
+              itemBuilder: (context, index) {
+                return ListTile(
+                  title: Text(storedValues[index]),
+                );
+              },
+            ),
+          ],
+        ),
       ),
     );
   }
