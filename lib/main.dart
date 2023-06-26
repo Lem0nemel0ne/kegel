@@ -32,8 +32,10 @@ class _ButtonTablePageState extends State<ButtonTablePage> {
       List.generate(15, (index) => (index + 16).toString());
   List<String> table2Values2 = [];
   List<String> storedValues = [];
+  int currentRound = 1;
 
   bool showNextButton = false;
+  bool showEndScreen = false;
 
   void storeValues() {
     storedValues.clear();
@@ -51,6 +53,10 @@ class _ButtonTablePageState extends State<ButtonTablePage> {
       clearTables();
       storeValues();
       showNextButton = false;
+      currentRound++;
+      if (currentRound > 4) {
+        showEndScreen = true;
+      }
     });
   }
 
@@ -66,6 +72,22 @@ class _ButtonTablePageState extends State<ButtonTablePage> {
 
   @override
   Widget build(BuildContext context) {
+    if (showEndScreen) {
+      return Scaffold(
+        appBar: AppBar(
+          title: Text('End Screen'),
+        ),
+        body: ListView.builder(
+          itemCount: storedValues.length,
+          itemBuilder: (context, index) {
+            return ListTile(
+              title: Text(storedValues[index]),
+            );
+          },
+        ),
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: Text('Button Table Example'),
