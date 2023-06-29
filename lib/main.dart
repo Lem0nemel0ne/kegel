@@ -32,10 +32,9 @@ class _ButtonTablePageState extends State<ButtonTablePage> {
       List.generate(15, (index) => (index + 16).toString());
   List<String> table2Values2 = [];
   List<String> storedValues = [];
-  int currentRound = 1;
 
   bool showNextButton = false;
-  bool showEndScreen = false;
+  int totalSum = 0;
 
   void storeValues() {
     storedValues.clear();
@@ -53,41 +52,24 @@ class _ButtonTablePageState extends State<ButtonTablePage> {
       clearTables();
       storeValues();
       showNextButton = false;
-      currentRound++;
-      if (currentRound > 4) {
-        showEndScreen = true;
-      }
+      totalSum = 0;
     });
   }
 
   void onBackButtonClick() {
     setState(() {
       if (table2Values2.isNotEmpty) {
-        table2Values2.removeLast();
+        int value = int.parse(table2Values2.removeLast());
+        totalSum -= value;
       } else if (tableValues2.isNotEmpty) {
-        tableValues2.removeLast();
+        int value = int.parse(tableValues2.removeLast());
+        totalSum -= value;
       }
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    if (showEndScreen) {
-      return Scaffold(
-        appBar: AppBar(
-          title: Text('End Screen'),
-        ),
-        body: ListView.builder(
-          itemCount: storedValues.length,
-          itemBuilder: (context, index) {
-            return ListTile(
-              title: Text(storedValues[index]),
-            );
-          },
-        ),
-      );
-    }
-
     return Scaffold(
       appBar: AppBar(
         title: Text('Button Table Example'),
@@ -105,8 +87,10 @@ class _ButtonTablePageState extends State<ButtonTablePage> {
                     buttonValues1[index] = (index + 1).toString();
                     if (tableValues2.length < table2Values1.length) {
                       tableValues2.add(buttonValues1[index]);
+                      totalSum += int.parse(buttonValues1[index]);
                     } else {
                       table2Values2.add(buttonValues1[index]);
+                      totalSum += int.parse(buttonValues1[index]);
                     }
                     if (tableValues2.length == table2Values1.length &&
                         table2Values2.length == table2Values1.length) {
@@ -130,8 +114,10 @@ class _ButtonTablePageState extends State<ButtonTablePage> {
                       buttonValues2[index] = (index + 6).toString();
                       if (tableValues2.length < table2Values1.length) {
                         tableValues2.add(buttonValues2[index]);
+                        totalSum += int.parse(buttonValues2[index]);
                       } else {
                         table2Values2.add(buttonValues2[index]);
+                        totalSum += int.parse(buttonValues2[index]);
                       }
                       if (tableValues2.length == table2Values1.length &&
                           table2Values2.length == table2Values1.length) {
@@ -148,8 +134,10 @@ class _ButtonTablePageState extends State<ButtonTablePage> {
                     buttonValues2[4] = '0';
                     if (tableValues2.length < table2Values1.length) {
                       tableValues2.add(buttonValues2[4]);
+                      totalSum += int.parse(buttonValues2[4]);
                     } else {
                       table2Values2.add(buttonValues2[4]);
+                      totalSum += int.parse(buttonValues2[4]);
                     }
                     if (tableValues2.length == table2Values1.length &&
                         table2Values2.length == table2Values1.length) {
@@ -226,6 +214,11 @@ class _ButtonTablePageState extends State<ButtonTablePage> {
                 ],
               ),
             ],
+          ),
+          SizedBox(height: 16),
+          Text(
+            'Total Sum: $totalSum',
+            style: TextStyle(fontWeight: FontWeight.bold),
           ),
           SizedBox(height: 16),
           Row(
