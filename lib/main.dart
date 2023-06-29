@@ -8,7 +8,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Button Table Example',
+      title: 'Kegel App',
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
@@ -72,7 +72,7 @@ class _ButtonTablePageState extends State<ButtonTablePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Button Table Example'),
+        title: Text('Kegel App'),
       ),
       body: Column(
         children: [
@@ -217,7 +217,7 @@ class _ButtonTablePageState extends State<ButtonTablePage> {
           ),
           SizedBox(height: 16),
           Text(
-            'Total Sum: $totalSum',
+            'Holz(Bahn): $totalSum',
             style: TextStyle(fontWeight: FontWeight.bold),
           ),
           SizedBox(height: 16),
