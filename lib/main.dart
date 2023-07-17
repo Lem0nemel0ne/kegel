@@ -32,9 +32,11 @@ class _ButtonTablePageState extends State<ButtonTablePage> {
       List.generate(15, (index) => (index + 16).toString());
   List<String> table2Values2 = [];
   List<String> storedValues = [];
+  List<List<String>> savedTables = [];
 
   bool showNextButton = false;
   int totalSum = 0;
+  int round = 1;
 
   void storeValues() {
     storedValues.clear();
@@ -53,6 +55,16 @@ class _ButtonTablePageState extends State<ButtonTablePage> {
       storeValues();
       showNextButton = false;
       totalSum = 0;
+      round++;
+
+      if (round > 4) {
+        savedTables.add([
+          ...tableValues1,
+          ...tableValues2,
+          ...table2Values1,
+          ...table2Values2
+        ]);
+      }
     });
   }
 
@@ -66,6 +78,71 @@ class _ButtonTablePageState extends State<ButtonTablePage> {
         totalSum -= value;
       }
     });
+  }
+
+  void onViewTablesClick() {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text('Saved Tables'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              for (int i = 0; i < savedTables.length; i++)
+                Column(
+                  children: [
+                    Text('Round ${i + 1}'),
+                    SizedBox(height: 8),
+                    Table(
+                      border: TableBorder.all(),
+                      columnWidths: {
+                        for (int i = 0; i < 15; i++) i: FlexColumnWidth(1),
+                      },
+                      children: [
+                        TableRow(
+                          children: [
+                            for (int i = 0; i < 15; i++)
+                              Padding(
+                                padding: EdgeInsets.all(8.0),
+                                child: Text(
+                                  savedTables[i][i],
+                                ),
+                              ),
+                          ],
+                        ),
+                        TableRow(
+                          children: [
+                            for (int i = 0; i < 15; i++)
+                              Padding(
+                                padding: EdgeInsets.all(8.0),
+                                child: Text(
+                                  savedTables[i][i + 15],
+                                ),
+                              ),
+                          ],
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 16),
+                  ],
+                ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                setState(() {
+                  savedTables.clear();
+                });
+                Navigator.pop(context);
+              },
+              child: Text('Close'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
@@ -163,7 +240,6 @@ class _ButtonTablePageState extends State<ButtonTablePage> {
                       padding: EdgeInsets.all(8.0),
                       child: Text(
                         tableValues1[i],
-                        textAlign: TextAlign.center,
                       ),
                     ),
                 ],
@@ -175,7 +251,6 @@ class _ButtonTablePageState extends State<ButtonTablePage> {
                       padding: EdgeInsets.all(8.0),
                       child: Text(
                         tableValues2.length > i ? tableValues2[i] : '',
-                        textAlign: TextAlign.center,
                       ),
                     ),
                 ],
@@ -195,8 +270,7 @@ class _ButtonTablePageState extends State<ButtonTablePage> {
                     Padding(
                       padding: EdgeInsets.all(8.0),
                       child: Text(
-                        table2Values1[i],
-                        textAlign: TextAlign.center,
+                        table2Values1.length > i ? table2Values1[i] : '',
                       ),
                     ),
                 ],
@@ -208,7 +282,6 @@ class _ButtonTablePageState extends State<ButtonTablePage> {
                       padding: EdgeInsets.all(8.0),
                       child: Text(
                         table2Values2.length > i ? table2Values2[i] : '',
-                        textAlign: TextAlign.center,
                       ),
                     ),
                 ],
@@ -218,6 +291,10 @@ class _ButtonTablePageState extends State<ButtonTablePage> {
           SizedBox(height: 16),
           Text(
             'Total Sum: $totalSum',
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
+          Text(
+            'Round: $round',
             style: TextStyle(fontWeight: FontWeight.bold),
           ),
           SizedBox(height: 16),
@@ -231,6 +308,10 @@ class _ButtonTablePageState extends State<ButtonTablePage> {
               ElevatedButton(
                 onPressed: showNextButton ? onButtonClick : null,
                 child: Text('Näste Bahn'),
+              ),
+              ElevatedButton(
+                onPressed: round > 4 ? onViewTablesClick : null,
+                child: Text('View Tables'),
               ),
             ],
           ),
